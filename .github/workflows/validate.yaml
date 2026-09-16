@@ -1,0 +1,25 @@
+name: Validate GitOps configuration
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  kustomize-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: imranismail/setup-kustomize@v3
+      - name: Build staging
+        run: kustomize build overlays/staging > /tmp/staging.yaml
+      - name: Build production
+        run: kustomize build overlays/production > /tmp/production.yaml
+      - name: Verify no committed PostgreSQL Secret
+        run: |
+          if grep -R "course-local-project-password" .; then
+            echo "A plaintext course password must not live in the config repository"
+            exit 1
+          fi
