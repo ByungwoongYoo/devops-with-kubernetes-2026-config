@@ -19,7 +19,7 @@ jobs:
         run: kustomize build overlays/production > /tmp/production.yaml
       - name: Verify no committed PostgreSQL Secret
         run: |
-          if grep -R "course-local-project-password" .; then
-            echo "A plaintext course password must not live in the config repository"
+          if grep -R --include='*.yaml' --include='*.yml' "POSTGRES_PASSWORD:" base overlays argocd; then
+            echo "Do not commit a PostgreSQL password value to the GitOps repository"
             exit 1
           fi
